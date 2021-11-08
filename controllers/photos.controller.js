@@ -7,9 +7,8 @@ exports.add = async (req, res) => {
   try {
     const { title, author, email } = req.fields;
     const file = req.files.file;
-    console.log('title length', title.value.length);
     if (title && author && email && file) { // if fields are not empty...
-
+      if (title.length >= 25 || author.length >= 50) alert(new Error('Wrong length of input!'));
       const fileName = file.path.split('/').slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
       const fileExt = fileName.split('.').slice(-1)[0];
       if (fileExt != 'jpg' && fileExt != 'png' && fileExt != 'gif') alert(new Error('Wrong input!'));

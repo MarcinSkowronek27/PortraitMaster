@@ -7,11 +7,12 @@ exports.add = async (req, res) => {
   try {
     const { title, author, email } = req.fields;
     const file = req.files.file;
-    const typeFile = file.type.split('/').pop().toLowerCase();
-    if (typeFile != 'jpeg' && typeFile != 'jpg' && typeFile != 'png' && typeFile != 'bmp' && typeFile != 'gif') alert('Please select a valid image');
+    console.log('title length', title.value.length);
     if (title && author && email && file) { // if fields are not empty...
 
       const fileName = file.path.split('/').slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
+      const fileExt = fileName.split('.').slice(-1)[0];
+      if (fileExt != 'jpg' && fileExt != 'png' && fileExt != 'gif') alert(new Error('Wrong input!'));
       const newPhoto = new Photo({ title, author, email, src: fileName, votes: 0 });
       await newPhoto.save(); // ...save new photo in DB
       res.json(newPhoto);

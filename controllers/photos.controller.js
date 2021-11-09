@@ -85,28 +85,35 @@ exports.vote = async (req, res) => {
     const clientIp = requestIp.getClientIp(req);
     const checkClientIp = await Voter.findOne({ user: clientIp });
     const photoToUpdate = await Photo.findOne({ _id: req.params.id });
+    // console.log('checkClientIp', checkClientIp);
     if (!checkClientIp) {
-      const newVoter = new Voter({ user: clientIp, votes: ''});
+      const newVoter = new Voter({ user: clientIp, votes: req.params.id });
       await newVoter.save();
-      console.log('nie ma tego IP w bazie');
-      // console.log(photoToUpdate);
+      console.log('nie ma tego IP w bazie, więc dodaję je do bazy');
+      console.log(photoToUpdate._id);
     } else {
-      console.log('jest to IP już w bazie');
-      const checkPhoto = await Voter.findOne({ votes: photoToUpdate._id })
-      console.log('checkPhoto', checkPhoto);
+      const checkPhoto = await Voter.findOne({ user: clientIp, votes: req.params.id });
       if (checkPhoto) res.status(500).json({ message: 'You can not vote twice on the same photo!' });
       else {
-        console.log('nie ma tego zdjęcia, więc je dodaj do bazy');
-        const voterUpdate = new Voter({ votes: req.params.id });
-        console.log('voterUpdate:', voterUpdate);
-        if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
-        else {
-          photoToUpdate.votes++;
-          photoToUpdate.save();
-          res.send({ message: 'OK' });
-        }
+        await Voter.updateOne({ user: clientIp }, { $push: { votes: req.params.id } });
       }
     }
+    // else {
+    //   console.log('jest to IP już w bazie');
+    //   console.log('checkPhoto', checkPhoto);
+    //   if (checkPhoto) res.status(500).json({ message: 'You can not vote twice on the same photo!' });
+    // else {
+    //     console.log('nie ma tego zdjęcia, więc je dodaj do bazy');
+    //     const voterUpdate = new Voter({ votes: req.params.id });
+    //     console.log('voterUpdate:', voterUpdate);
+    //     if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
+    //     else {
+    //       photoToUpdate.votes++;
+    //       photoToUpdate.save();
+    //       res.send({ message: 'OK' });
+    //     }
+    //   }
+    // }
   } catch (err) {
     res.status(500).json(err);
   }

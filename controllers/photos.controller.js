@@ -89,31 +89,27 @@ exports.vote = async (req, res) => {
     if (!checkClientIp) {
       const newVoter = new Voter({ user: clientIp, votes: req.params.id });
       await newVoter.save();
+      if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
+      else {
+        photoToUpdate.votes++;
+        photoToUpdate.save();
+        res.send({ message: 'OK' });
+      }
       console.log('nie ma tego IP w bazie, więc dodaję je do bazy');
-      console.log(photoToUpdate._id);
+      // console.log(photoToUpdate._id);
     } else {
       const checkPhoto = await Voter.findOne({ user: clientIp, votes: req.params.id });
       if (checkPhoto) res.status(500).json({ message: 'You can not vote twice on the same photo!' });
       else {
         await Voter.updateOne({ user: clientIp }, { $push: { votes: req.params.id } });
+        if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
+        else {
+          photoToUpdate.votes++;
+          photoToUpdate.save();
+          res.send({ message: 'OK' });
+        }
       }
     }
-    // else {
-    //   console.log('jest to IP już w bazie');
-    //   console.log('checkPhoto', checkPhoto);
-    //   if (checkPhoto) res.status(500).json({ message: 'You can not vote twice on the same photo!' });
-    // else {
-    //     console.log('nie ma tego zdjęcia, więc je dodaj do bazy');
-    //     const voterUpdate = new Voter({ votes: req.params.id });
-    //     console.log('voterUpdate:', voterUpdate);
-    //     if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
-    //     else {
-    //       photoToUpdate.votes++;
-    //       photoToUpdate.save();
-    //       res.send({ message: 'OK' });
-    //     }
-    //   }
-    // }
   } catch (err) {
     res.status(500).json(err);
   }

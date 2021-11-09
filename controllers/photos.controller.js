@@ -59,27 +59,6 @@ exports.loadAll = async (req, res) => {
 /****** VOTE FOR PHOTO ********/
 
 exports.vote = async (req, res) => {
-  // const clientIp = requestIp.getClientIp(req);
-  // const checkClientIp = await Voter.findOne({ user: clientIp });
-  // console.log(checkClientIp);
-  // if (!checkClientIp) {
-  //   const newVoter = new Voter({ user: clientIp, votes: [req.params.id] });
-  //   await newVoter.save();
-  //   console.log('nie ma tego IP w bazie');
-  // res.json(newVoter);
-  // } else {
-  //   console.log('jest to IP już w bazie');
-  //   const checkImageId = await Voter.findOne({ data: req.params.id });
-  //   if (checkImageId) {
-  //     console.log('jest już to zdjęcie w bazie');
-  //     res.status(500).json({ message: 'You\'ve once chosen this photo' });
-  //   }
-  //   else {
-  //     const voterToUpdate = new Voter({ user: clientIp, data: req.params.id });
-  //     await voterToUpdate.save();
-  //     console.log('nie ma tego zdjęcia, więc je dodaj do bazy');
-  //     res.json(voterToUpdate);
-  //   }
 
   try {
     const clientIp = requestIp.getClientIp(req);
@@ -95,7 +74,7 @@ exports.vote = async (req, res) => {
         photoToUpdate.save();
         res.send({ message: 'OK' });
       }
-      console.log('nie ma tego IP w bazie, więc dodaję je do bazy');
+      // console.log('nie ma tego IP w bazie, więc dodaję je do bazy');
       // console.log(photoToUpdate._id);
     } else {
       const checkPhoto = await Voter.findOne({ user: clientIp, votes: req.params.id });

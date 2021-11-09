@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 // func for loading example data
 const loadTestData = require('./testData');
-const loadVoterData = require('./votersData');
 
 const connectToDB = () => {
 

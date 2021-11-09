@@ -47,9 +47,9 @@ const loadTestData = async () => {
     }
   ];
 
-try {
+  try {
     let counter = await Photo.countDocuments();
-    if(counter === 0) {
+    if (counter === 0) {
       console.log('No photos. Loading example data...');
       await Photo.create(data);
       console.log('Test data has been successfully loaded');

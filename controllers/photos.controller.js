@@ -60,37 +60,38 @@ exports.loadAll = async (req, res) => {
 
 exports.vote = async (req, res) => {
 
-  try {
-    const clientIp = requestIp.getClientIp(req);
-    const checkClientIp = await Voter.findOne({ user: clientIp });
-    const photoToUpdate = await Photo.findOne({ _id: req.params.id });
-    // console.log('checkClientIp', checkClientIp);
-    if (!checkClientIp) {
-      const newVoter = new Voter({ user: clientIp, votes: req.params.id });
-      await newVoter.save();
-      if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
-      else {
-        photoToUpdate.votes++;
-        photoToUpdate.save();
-        res.send({ message: 'OK' });
-      }
-      // console.log('nie ma tego IP w bazie, więc dodaję je do bazy');
-      // console.log(photoToUpdate._id);
-    } else {
-      const checkPhoto = await Voter.findOne({ user: clientIp, votes: req.params.id });
-      if (checkPhoto) res.status(500).json({ message: 'You can not vote twice on the same photo!' });
-      else {
-        await Voter.updateOne({ user: clientIp }, { $push: { votes: req.params.id } });
-        if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
-        else {
-          photoToUpdate.votes++;
-          photoToUpdate.save();
-          res.send({ message: 'OK' });
-        }
-      }
+
+  const clientIp = requestIp.getClientIp(req);
+  const checkClientIp = await Voter.findOne({ user: clientIp });
+  const photoToUpdate = await Photo.findOne({ _id: req.params.id });
+  // console.log('checkClientIp', checkClientIp);
+  if (!checkClientIp) {
+    const newVoter = new Voter({ user: clientIp, votes: req.params.id });
+    await newVoter.save();
+    // if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
+    // else {
+    //   photoToUpdate.votes++;
+    //   photoToUpdate.save();
+    //   res.send({ message: 'OK' });
+    // }
+    // console.log('nie ma tego IP w bazie, więc dodaję je do bazy');
+    // console.log(photoToUpdate._id);
+  } else {
+    const checkPhoto = await Voter.findOne({ user: clientIp, votes: req.params.id });
+    if (checkPhoto) res.status(500).json({ message: 'You can not vote twice on the same photo!' });
+    else {
+      await Voter.updateOne({ user: clientIp }, { $push: { votes: req.params.id } });
     }
-  } catch (err) {
+  }
+  try {
+    if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
+    else {
+      photoToUpdate.votes++;
+      photoToUpdate.save();
+      res.send({ message: 'OK' });
+    }
+  }
+  catch (err) {
     res.status(500).json(err);
   }
-
 };

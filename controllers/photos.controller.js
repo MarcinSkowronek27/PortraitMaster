@@ -59,39 +59,35 @@ exports.loadAll = async (req, res) => {
 /****** VOTE FOR PHOTO ********/
 
 exports.vote = async (req, res) => {
-
-
-  const clientIp = requestIp.getClientIp(req);
-  const checkClientIp = await Voter.findOne({ user: clientIp });
-  const photoToUpdate = await Photo.findOne({ _id: req.params.id });
-  // console.log('checkClientIp', checkClientIp);
-  if (!checkClientIp) {
-    const newVoter = new Voter({ user: clientIp, votes: req.params.id });
-    await newVoter.save();
-    // if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
-    // else {
-    //   photoToUpdate.votes++;
-    //   photoToUpdate.save();
-    //   res.send({ message: 'OK' });
-    // }
-    // console.log('nie ma tego IP w bazie, więc dodaję je do bazy');
-    // console.log(photoToUpdate._id);
-  } else {
-    const checkPhoto = await Voter.findOne({ user: clientIp, votes: req.params.id });
-    if (checkPhoto) res.status(500).json({ message: 'You can not vote twice on the same photo!' });
-    else {
-      await Voter.updateOne({ user: clientIp }, { $push: { votes: req.params.id } });
-    }
-  }
   try {
-    if (!photoToUpdate) res.status(404).json({ message: 'Not found' });
-    else {
-      photoToUpdate.votes++;
-      photoToUpdate.save();
-      res.send({ message: 'OK' });
+    const clientIp = requestIp.getClientIp(req);
+    const photoToUpdate = await Photo.findOne({ _id: req.params.id });
+    let voter = await Voter.findOne({ user: clientIp });
+
+    if (!voter) {
+      voter = new Voter({ user: clientIp, votes: [] });
+      await voter.save();
     }
+
+    if (!photoToUpdate) {
+      throw { code: 404, message: 'Not found!' };
+    }
+
+    const checkPhoto = voter.votes.includes(req.params.id)
+
+    if (checkPhoto) {
+      throw { code: 403, message: 'You can not vote twice on the same photo!' };
+    } else {
+      voter.votes.push(req.params.id);
+      await voter.save();
+    }
+
+    photoToUpdate.votes++;
+    photoToUpdate.save();
+
+    res.send({ message: 'OK' });
   }
   catch (err) {
-    res.status(500).json(err);
+    res.status(err.code || 500).json(err.message);
   }
 };
